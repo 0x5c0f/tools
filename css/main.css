@@ -1171,6 +1171,16 @@ strong,
 .page-home .content .subhead a{
 	color: inherit;
 }
+
+.page-home .content .nocolor:hover{
+	color: #0078A0;
+}
+
+.page-home .content .nocolor:active,.nocolor:visited,.nocolor:link,.nocolor:focus{
+	text-decoration: none;
+	color: #fff;
+}
+
 /* 6.4 Page clock countdown */
 .page-when .content{
 	padding-top: 1rem;
@@ -1583,6 +1593,3 @@ strong,
 .show-for-medium-up{
     display: none;   
 }
-
-
-
