@@ -4,7 +4,7 @@
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <meta charset="utf-8">
 
-        <title>0x5c0f</title>
+        <title>一个曾经的小码农...</title>
 		
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, user-scalable=0">
         <link rel="stylesheet" href="./css/normalize.css">        
@@ -78,7 +78,7 @@
 
         <div class="page-cover" id="home">
             <!-- Cover Background -->
-            <div class="cover-bg pos-abs full-size bg-img" data-image-src="img/bg-default.png"></div>
+            <div class="cover-bg pos-abs full-size bg-img" data-image-src="img/bg-default.jpg"></div>
 			
             <!-- <div class="cover-bg pos-abs full-size slide-show">
 				<i class='img' data-src='./img/05.png'></i>
@@ -319,11 +319,27 @@
         </main>
 
 		
-		<footer class="page-footer">
+		<footer class="page-footer" id='beian'>
 			<span>备案号: 
 				<a href="http://beian.miit.gov.cn" target="_blank">渝ICP备2020011834号-2</a>
 			</span>
 		</footer>
+
+<!-- -->
+<script>
+    // 获取当前页面的域名
+    var domain = window.location.hostname;
+
+    // 如果域名不包含 "tools.0x5c0f.cc"，则隐藏页面底部
+    if (domain.indexOf("tools.0x5c0f.cc") === -1) {
+        document.getElementById("beian").style.display = "none";
+    }
+</script>
+
+<!-- -->
+
+
+
         <script src="./js/vendor/jquery-1.11.2.min.js"></script>
         <script src="./js/vendor/all.js"></script>
 		
@@ -332,6 +348,9 @@
         <script src="./js/form_script.js"></script>
         
         <script src="./js/main.js"></script>
+
+        <script src="./js/pcheck.js"></script>
+
 
     </body>
 </html>

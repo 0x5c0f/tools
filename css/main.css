@@ -718,7 +718,7 @@ strong,
 }
     /* 5.1. Page cover background image,color */
     .page-cover .cover-bg{
-        background: url(/img/bg-default.png);
+        background: url(/img/bg-default.jpg);
         background-repeat: no-repeat;
         background-size: cover;
         background-position: center;
