@@ -135,6 +135,15 @@ function createTranslateUI() {
   container.className = 'translate-ui-container collapsed';
   container.id = 'translate-ui-container';
   
+  // 恢复保存的位置
+  const savedPosition = localStorage.getItem('translateUIPosition');
+  if (savedPosition) {
+    const { x, y } = JSON.parse(savedPosition);
+    container.style.left = x + 'px';
+    container.style.top = y + 'px';
+    container.style.right = 'auto';
+  }
+  
   const logo = document.createElement('div');
   logo.className = 'translate-ui-logo';
   logo.textContent = 'T';
@@ -194,6 +203,13 @@ function createTranslateUI() {
   document.addEventListener('mouseup', function() {
     isDragging = false;
     container.style.transition = 'all 0.3s ease';
+    
+    // 保存当前位置
+    const rect = container.getBoundingClientRect();
+    localStorage.setItem('translateUIPosition', JSON.stringify({
+      x: rect.left,
+      y: rect.top
+    }));
   });
 
   // 添加折叠/展开事件
