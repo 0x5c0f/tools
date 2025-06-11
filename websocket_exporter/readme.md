@@ -1,1 +1,1 @@
-# 用于 `websocket` 服务状态检测， 返回特定的 `prometheus` 采集指标, 目前只包含连接状态和连接的响应时间 ， 本脚本由 `豆包AI` 编写第一版， 由 `google gemini flash 2.5` 完成最终优化
+### 用于 `websocket` 服务状态检测， 返回特定的 `prometheus` 采集指标, 目前只包含连接状态和连接的响应时间 ， 本脚本由 `豆包AI` 编写第一版， 由 `google gemini flash 2.5` 完成最终优化
