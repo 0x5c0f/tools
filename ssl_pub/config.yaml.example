@@ -24,10 +24,15 @@ cert_ids:                                                     # 要获取的证�
   - 1                                                         # odalong.com
 
 # ============================================
-# 通知配置, 适配企业微信机器人 钉钉机器人
+# 通知配置（Apprise）
+# https://github.com/caronc/apprise/wiki
 # ============================================
-webhook_urls:
-  - "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx"
+# notification_title: "服务器证书更新监控"                    # 通知标题（可选）
+# notification_body_format: "markdown"                        # markdown / text（可选）
+apprise_urls:
+  # 企业微信 / 钉钉 / Telegram / Email / Slack 等均可通过 Apprise URL 配置
+  # 示例请参考 Apprise 文档，这里仅示意格式
+  - "tgram://BOT_TOKEN/CHAT_ID"
 
 # ============================================
 # 证书格式配置
@@ -46,5 +51,5 @@ cert_formats:                                                 # 要下载的证�
 # ============================================
 # 域名重启命令配置
 # ============================================
-# domain_reload_commands:                                       # 各域名对应的重启命令
-#   "example.com": "systemctl restart nginx"                    # 明文命令
+# domain_reload_commands:                                     # 各域名对应的重启命令
+#   "example.com": "systemctl restart nginx"                  # 明文命令

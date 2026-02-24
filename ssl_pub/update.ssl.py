@@ -25,6 +25,7 @@ import re
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 
+import apprise
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
@@ -46,7 +47,7 @@ class CertdClient:
         self.serverinfo = config.get("serverinfo", "unknown_server")
         
         # Certd API 配置
-        self.certd_base_url = config.get("certd_base_url", "http://127.0.0.1:7001")
+        self.certd_base_url = config.get("certd_base_url", "http://127.0.0.1:7001").rstrip("/")
         self.certd_key_id = config.get("certd_key_id", "")
         self.certd_key_secret = config.get("certd_key_secret", "")
         
@@ -57,8 +58,9 @@ class CertdClient:
         self.domain_reload_commands = config.get("domain_reload_commands", {})
         
         # 通知配置
-        self.wechat_title = config.get("wechat_title", "")
-        self.webhook_urls = config.get("webhook_urls", [])
+        self.notification_title = config.get("notification_title", "服务器证书更新监控")
+        self.apprise_urls = config.get("apprise_urls", [])
+        self.notification_body_format = str(config.get("notification_body_format", "markdown")).lower()
         
         # 证书格式配置
         self.cert_formats = config.get("cert_formats", ["crt", "key", "ic", "oc", "pfx", "der", "jks", "one"])
@@ -104,8 +106,6 @@ class CertdClient:
         other_message = ""
 
         message = f"""
-**{platform_name}**
-
 ---------------------------------------------------
 - **证书域名**：{domain}
 - **操作状态**：{status} {emoji}
@@ -116,39 +116,41 @@ class CertdClient:
 
         return message.strip()
 
+    def _get_apprise_format(self, markdown: bool):
+        if markdown and self.notification_body_format != "text":
+            return apprise.NotifyFormat.MARKDOWN
+        return apprise.NotifyFormat.TEXT
+
     def send_notifications(self, content: str, markdown: bool = True) -> Dict[str, bool]:
-        headers = {'Content-Type': 'application/json'}
         results = {}
+        urls = self.apprise_urls if isinstance(self.apprise_urls, list) else []
+        if not urls:
+            logging.debug("未配置 apprise_urls，跳过通知发送。")
+            return results
 
-        for url in self.webhook_urls:
-                is_wecom = "qyapi.weixin.qq.com" in url or "weixin.qq.com" in url
-                is_dingtalk = "oapi.dingtalk.com" in url
+        body_format = self._get_apprise_format(markdown=markdown)
 
-                if not (is_wecom or is_dingtalk):
-                    logging.error(f"[跳过] 不支持的 webhook 地址：{url}")
-                    results[url] = False
-                    continue
+        for url in urls:
+            notifier = apprise.Apprise()
+            if not notifier.add(url):
+                logging.error(f"[失败] 无法加载 Apprise 通知地址: {url}")
+                results[url] = False
+                continue
 
-                if markdown:
-                    if is_wecom:
-                        payload = { "msgtype": "markdown", "markdown": { "content": content } }
-                    elif is_dingtalk:
-                        payload = { "msgtype": "markdown","markdown": {"title": "通知", "text": content} }
+            try:
+                ok = notifier.notify(
+                    title=self.notification_title,
+                    body=content,
+                    body_format=body_format,
+                )
+                if ok:
+                    logging.info(f"[成功] 已发送到: {url}")
                 else:
-                    payload = { "msgtype": "text", "text": { "content": content } }
-
-                try:
-                    response = httpx.post(url, headers=headers, json=payload, timeout=5.0)
-                    result = response.json()
-                    if result.get("errcode") == 0:
-                        logging.info(f"[成功] 已发送到: {url}")
-                        results[url] = True
-                    else:
-                        logging.error(f"[失败] {url} 返回: {result}")
-                        results[url] = False
-                except httpx.RequestError as e:
-                    logging.error(f"[异常] {url} 请求失败: {e}")
-                    results[url] = False
+                    logging.error(f"[失败] Apprise 通知发送失败: {url}")
+                results[url] = ok
+            except Exception as e:
+                logging.error(f"[异常] {url} 通知发送失败: {e}")
+                results[url] = False
 
         return results
 
@@ -405,6 +407,9 @@ class CertdClient:
             else:
                 logging.error(f"获取证书 ID {cert_id} 失败")
 
+    def close(self):
+        self.client.close()
+
     def restart_proxy(self, domain: str):
         """重启代理服务"""
         command = self.domain_reload_commands.get(domain)
@@ -442,6 +447,7 @@ def main():
     # 从YAML配置文件加载设置
     config_file = script_dir / "config.yaml"
     
+    client = None
     try:
         client = CertdClient(config_file)
         client.setup_logging()
@@ -461,6 +467,9 @@ def main():
     except Exception as e:
         print(f"程序运行错误: {e}")
         exit(1)
+    finally:
+        if client:
+            client.close()
 
 
 if __name__ == "__main__":
